@@ -11,8 +11,33 @@ export const normalize = (w: string) => w.toLowerCase().replace(/[^a-z']/g, "").
 
 const tokenize = (t: string) => t.split(/\s+/).map(normalize).filter(Boolean);
 
-function findRule(profile: AccentProfile, e: string, h: string) {
-  return profile.rules.find((r) => r.explains(e, h));
+const CONS = "bcdfghjklmnpqrstvwxyz".split("");
+
+/**
+ * Single rule first; otherwise try two rules in sequence (e → m → h).
+ * Intermediates come from final-cluster edits, so composition only ever
+ * stacks a sourced rule with cluster reduction-style coda changes.
+ */
+function findRule(profile: AccentProfile, e: string, h: string): AccentRule | undefined {
+  const single = profile.rules.find((r) => r.explains(e, h));
+  if (single || e.length < 3 || h.length < 2) return single;
+  const mids = new Set<string>([...CONS.map((c) => h + c), h + "ed", e.slice(0, -1), e.slice(0, -2)]);
+  mids.delete(e); mids.delete(h);
+  for (const m of mids)
+    for (const r1 of profile.rules) {
+      if (!r1.explains(e, m)) continue;
+      for (const r2 of profile.rules) {
+        if (r2 === r1 || !r2.explains(m, h)) continue;
+        return {
+          id: `${r1.id}+${r2.id}`,
+          name: `${r1.name} + ${r2.name}`,
+          example: `${e} → ${m} → ${h}`,
+          source: { citation: r1.source.citation === r2.source.citation ? r1.source.citation : `${r1.source.citation} · ${r2.source.citation}` },
+          explains: () => true,
+        };
+      }
+    }
+  return undefined;
 }
 
 /** Word-level alignment; accent-explained substitutions cost 0 so they align cleanly. */
