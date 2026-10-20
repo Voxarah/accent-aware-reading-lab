@@ -19,13 +19,13 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [pid, setPid] = useState(PASSAGES[0].id);
+  const [pid, setPid] = useState(PASSAGES[0]!.id);
   const [prof, setProf] = useState<ProfileId>("aae");
   const [text, setText] = useState("");
   const [results, setResults] = useState<WordResult[] | null>(null);
   const [open, setOpen] = useState<number | null>(null);
-  const passage = PASSAGES.find((p) => p.id === pid)!;
-  const profile = PROFILES.find((p) => p.id === prof)!;
+  const passage = PASSAGES.find((p) => p.id === pid) ?? PASSAGES[0]!;
+  const profile = PROFILES.find((p) => p.id === prof) ?? PROFILES[0]!;
   const s = results ? summarize(results) : null;
 
   const reset = () => { setResults(null); setOpen(null); };
@@ -90,7 +90,7 @@ function Index() {
               </button>
             ))}
           </p>
-          {open !== null && <Detail r={results[open]} />}
+          {open !== null && results[open] && <Detail r={results[open]!} />}
         </section>
       )}
 
