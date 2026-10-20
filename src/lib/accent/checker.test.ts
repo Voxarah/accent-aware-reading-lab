@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { checkReading, summarize } from "./checker";
 import { PROFILES } from "./rules";
+import { PASSAGES } from "./passages";
+import { PRESETS } from "./presets";
 
 const aae = PROFILES.find((p) => p.id === "aae")!;
 const southern = PROFILES.find((p) => p.id === "southern")!;
@@ -36,4 +38,36 @@ describe("accent-aware reading check", () => {
   it("every rule cites a source", () => {
     for (const p of PROFILES) for (const r of p.rules) expect(r.source.citation.length).toBeGreaterThan(20);
   });
+
+  it("AAE: asked → aks / axed is accent, not an error", () => {
+    expect(summarize(checkReading("he asked", "he aks", aae)).errors).toBe(0);
+    expect(summarize(checkReading("he asked", "he axed", aae)).errors).toBe(0);
+    expect(summarize(checkReading("he asked", "he aks", ga)).errors).toBe(1);
+  });
+
+  it("AAE: two rules stack (parked → pahk, spend → spin)", () => {
+    const r = checkReading("parked spend", "pahk spin", aae);
+    expect(summarize(r).errors).toBe(0);
+    expect(r[0]!.kind === "accent" && r[0]!.rule.id).toBe("r-lessness+cluster-reduction");
+  });
+
+  it("stacking does not excuse a real misreading (parked → packed)", () => {
+    expect(summarize(checkReading("parked", "packed", aae)).errors).toBe(1);
+  });
+});
+
+describe("sample readers", () => {
+  for (const p of PASSAGES) {
+    const pr = PRESETS[p.id]!;
+    it(`${p.id}: dialect reader has 0 errors in AAE but errors on the standard check`, () => {
+      expect(summarize(checkReading(p.text, pr.dialect, aae)).errors).toBe(0);
+      expect(summarize(checkReading(p.text, pr.dialect, ga)).errors).toBeGreaterThan(5);
+    });
+    it(`${p.id}: struggling reader has at least 3 errors in AAE`, () => {
+      expect(summarize(checkReading(p.text, pr.miscue, aae)).errors).toBeGreaterThanOrEqual(3);
+    });
+    it(`${p.id}: mixed reader has exactly 1 error in AAE`, () => {
+      expect(summarize(checkReading(p.text, pr.mixed, aae)).errors).toBe(1);
+    });
+  }
 });

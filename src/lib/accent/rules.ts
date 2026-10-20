@@ -117,6 +117,24 @@ const ayGlide: AccentRule = {
   },
 };
 
+const askMetathesis: AccentRule = {
+  id: "ask-metathesis",
+  name: "ask → aks / ax (metathesis)",
+  example: "ask → aks, asked → axed",
+  source: { citation: `${S.green.citation} · ${S.wolfram.citation}` },
+  explains: (e, h) => {
+    const m = e.match(/^ask(s|ed|ing)?$/);
+    if (!m) return false;
+    const map: Record<string, string[]> = {
+      "": ["aks", "ax"],
+      s: ["akses", "axes", "aks", "ax"],
+      ed: ["aksed", "axed", "akst", "axt", "aks", "ax"],
+      ing: ["aksing", "axing", "aksin", "axin"],
+    };
+    return (map[m[1] ?? ""] ?? []).includes(h);
+  },
+};
+
 export type ProfileId = "aae" | "southern" | "general-american";
 
 export type AccentProfile = {
@@ -131,7 +149,7 @@ export const PROFILES: AccentProfile[] = [
     id: "aae",
     name: "African American English",
     status: "Sourced rules · validating",
-    rules: [clusterReduction, thStopping, thFronting, rLessness, pinPen, ingToIn],
+    rules: [clusterReduction, thStopping, thFronting, rLessness, pinPen, ingToIn, askMetathesis],
   },
   {
     id: "southern",

@@ -166,3 +166,8 @@
   .word[data-kind="accent"] { @apply bg-accent/20 underline decoration-accent decoration-2 underline-offset-4; }
   .word[data-kind="substituted"], .word[data-kind="omitted"], .word[data-kind="inserted"] { @apply bg-destructive/15 text-destructive; }
 }
+
+.card[data-highlight="true"] {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
