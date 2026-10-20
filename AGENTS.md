@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Accent rules live in src/lib/accent/rules.ts; every rule must cite a published source, unsourced rules are excluded — why: fairness claims must be defensible.
+- Reading checks run on typed transcripts in the browser; no audio leaves the device — why: child-voice privacy rule.
