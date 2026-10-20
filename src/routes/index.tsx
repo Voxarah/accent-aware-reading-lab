@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { PASSAGES } from "@/lib/accent/passages";
 import { PROFILES, OTHER_PROFILES_COUNT, OTHER_PROFILES_LABEL, type ProfileId } from "@/lib/accent/rules";
 import { checkReading, summarize, type WordResult } from "@/lib/accent/checker";
@@ -20,18 +21,23 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [pid, setPid] = useState(PASSAGES[0]!.id);
+  const [pid, setPid] = useState(PASSAGES[0]?.id ?? "clusters");
   const [prof, setProf] = useState<ProfileId>("aae");
   const [text, setText] = useState("");
   const [reader, setReader] = useState<ReaderId | null>(null);
   const [results, setResults] = useState<WordResult[] | null>(null);
   const [baseline, setBaseline] = useState<WordResult[] | null>(null);
   const [open, setOpen] = useState<number | null>(null);
-  const passage = PASSAGES.find((p) => p.id === pid) ?? PASSAGES[0]!;
-  const profile = PROFILES.find((p) => p.id === prof) ?? PROFILES[0]!;
-  const ga = PROFILES.find((p) => p.id === "general-american")!;
+  const comparisonRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (results) comparisonRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+  }, [results]);
+  const passage = PASSAGES.find((p) => p.id === pid) ?? PASSAGES[0];
+  const profile = PROFILES.find((p) => p.id === prof) ?? PROFILES[0];
+  const ga = PROFILES.find((p) => p.id === "general-american");
   const s = results ? summarize(results) : null;
   const b = baseline ? summarize(baseline) : null;
+  if (!passage || !profile || !ga) return null;
   const total = passage.text.split(/\s+/).filter(Boolean).length;
   const pct = (errors: number) => Math.max(0, Math.round(((total - errors) / total) * 100));
 
@@ -42,8 +48,9 @@ function Index() {
     setOpen(null);
   };
   const loadReader = (id: ReaderId) => {
-    const t = id === "control" ? passage.text : PRESETS[passage.id]![id];
-    const aae = PROFILES.find((p) => p.id === "aae")!;
+    const t = id === "control" ? passage.text : PRESETS[passage.id]?.[id] ?? passage.text;
+    const aae = PROFILES.find((p) => p.id === "aae");
+    if (!aae) return;
     setProf("aae"); setReader(id); setText(t); run(t, aae);
   };
 
@@ -62,7 +69,7 @@ function Index() {
         <h2 className="label">1 · Passage</h2>
         <div className="mt-2 flex flex-wrap gap-2">
           {PASSAGES.map((p) => (
-            <button key={p.id} onClick={() => { setPid(p.id); setReader(null); setText(""); reset(); }} className="chip" data-active={p.id === pid}>{p.title}</button>
+            <Button variant="ghost" key={p.id} onClick={() => { setPid(p.id); setReader(null); setText(""); reset(); }} className="chip h-auto whitespace-normal" data-active={p.id === pid}>{p.title}</Button>
           ))}
         </div>
         <div className="card mt-3">
@@ -75,23 +82,48 @@ function Index() {
         <h2 className="label">2 · Try a sample reader</h2>
         <div className="mt-2 grid grid-cols-2 gap-2">
           {READERS.map((r) => (
-            <button key={r.id} onClick={() => loadReader(r.id)} className="option" data-active={reader === r.id}>
+            <Button variant="ghost" key={r.id} onClick={() => loadReader(r.id)} className="option h-auto whitespace-normal" data-active={reader === r.id}>
               <span className="font-medium">{r.label}</span>
               <span className="text-xs text-muted-foreground">{r.blurb}</span>
-            </button>
+            </Button>
           ))}
         </div>
         <p className="mt-2 text-xs text-muted-foreground">Sample transcripts are written for this demo. No child's reading is used.</p>
       </section>
 
+      {results && s && b && (
+        <section ref={comparisonRef} aria-label="Reading score comparison" className="mb-6 grid scroll-mt-4 grid-cols-2 gap-3" aria-live="polite">
+          <div className="card" >
+            <p className="label">Literal check · control</p>
+            <p className="font-display mt-2 text-4xl">{pct(b.errors)}%</p>
+            <p className="text-sm">{b.errors} flagged differences</p>
+            <p className="mt-2 text-xs font-semibold" data-score-state={b.errors === 0 ? "clear" : "flagged"}>{b.errors === 0 ? "No differences flagged" : "Reading review needed"}</p>
+            <p className="mt-2 text-xs text-muted-foreground">Every difference from the text counts as a mistake.</p>
+          </div>
+          <div className="card" data-highlight="true">
+            <p className="label">Voxarah · {profile.name}</p>
+            <p className="font-display mt-2 text-4xl">{pct(s.errors)}%</p>
+            <p className="text-sm">{s.errors} flagged differences</p>
+            <p className="mt-2 text-xs font-semibold" data-score-state={s.errors === 0 ? "clear" : "flagged"}>{s.errors === 0 ? "No differences flagged" : "Reading review needed"}</p>
+            <p className="mt-2 text-xs text-muted-foreground">Sourced accent differences are not counted.</p>
+          </div>
+          <p className="col-span-2 text-center text-sm font-medium">
+            {b.errors - s.errors > 0
+              ? `${b.errors - s.errors} sourced accent differences excluded from the literal check’s flags.`
+              : "Both checks agree on this reading."}
+          </p>
+          <p className="col-span-2 text-xs text-muted-foreground">Prototype word-match scores, not DIBELS or Acadience results. These scores do not establish grade-level mastery or intervention placement. Published linguistic sources support the rules, not clinical validation of this checker.</p>
+        </section>
+      )}
+
       <section className="mb-6">
         <h2 className="label">3 · Accent profile</h2>
         <div className="mt-2 grid gap-2">
           {PROFILES.map((p) => (
-            <button key={p.id} onClick={() => { setProf(p.id); if (text.trim()) run(text, p); else reset(); }} className="option" data-active={p.id === prof}>
+            <Button variant="ghost" key={p.id} onClick={() => { setProf(p.id); if (text.trim()) run(text, p); else reset(); }} className="option h-auto whitespace-normal" data-active={p.id === prof}>
               <span className="font-medium">{p.name}</span>
               <span className="text-xs text-muted-foreground">{p.status}</span>
-            </button>
+            </Button>
           ))}
           <div className="option opacity-70">
             <span className="font-medium">{OTHER_PROFILES_COUNT} other Voxarah profiles</span>
@@ -104,32 +136,10 @@ function Index() {
         <h2 className="label">4 · Or type what was read</h2>
         <textarea value={text} onChange={(e) => { setText(e.target.value); setReader(null); reset(); }} rows={4}
           placeholder="Type exactly what the reader said, e.g. “Mike walk pas da ol des…”" className="field mt-2" />
-        <button onClick={() => run(text)} disabled={!text.trim()} className="btn-primary mt-3 w-full">
+        <Button variant="ghost" onClick={() => run(text)} disabled={!text.trim()} className="btn-primary mt-3 h-auto w-full">
           Check reading
-        </button>
+        </Button>
       </section>
-
-      {results && s && b && (
-        <section className="mb-6 grid grid-cols-2 gap-3">
-          <div className="card" >
-            <p className="label">Standard check</p>
-            <p className="font-display mt-2 text-4xl">{pct(b.errors)}%</p>
-            <p className="text-sm">{b.errors} reading errors</p>
-            <p className="mt-2 text-xs text-muted-foreground">Every difference from the text counts as a mistake.</p>
-          </div>
-          <div className="card" data-highlight="true">
-            <p className="label">Voxarah · {profile.name}</p>
-            <p className="font-display mt-2 text-4xl">{pct(s.errors)}%</p>
-            <p className="text-sm">{s.errors} reading errors</p>
-            <p className="mt-2 text-xs text-muted-foreground">Sourced accent differences are not counted.</p>
-          </div>
-          <p className="col-span-2 text-center text-sm font-medium">
-            {b.errors - s.errors > 0
-              ? `${b.errors - s.errors} accent differences the standard check would count as reading errors.`
-              : "Both checks agree on this reading."}
-          </p>
-        </section>
-      )}
 
       {results && s && (
         <section className="card mb-8">
@@ -140,18 +150,19 @@ function Index() {
           </div>
           <p className="mt-5 flex flex-wrap gap-x-1.5 gap-y-2 leading-loose">
             {results.map((r, i) => (
-              <button key={i} onClick={() => setOpen(open === i ? null : i)} className="word" data-kind={r.kind}>
+              <Button variant="ghost" key={i} onClick={() => setOpen(open === i ? null : i)} className="word h-auto px-1 py-0" data-kind={r.kind}>
                 {r.kind === "omitted" ? <s>{r.expected}</s> : r.kind === "inserted" ? `+${r.heard}` : r.heard}
-              </button>
+              </Button>
             ))}
           </p>
           <p className="mt-3 text-xs text-muted-foreground">Tap any word to see why.</p>
-          {open !== null && results[open] && <Detail r={results[open]!} />}
+          {open !== null && results[open] && <Detail r={results[open]} />}
         </section>
       )}
 
       <section>
         <h2 className="label">Rules in {profile.name}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Scope: pronunciation-related word differences in typed transcripts. Grammatical dialect variation, such as “He tall” for “He is tall,” is not modeled; a missing “is” remains flagged for review, not proof of a reading difficulty.</p>
         {profile.rules.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">None. This control proves real differences are always flagged.</p>
         ) : (

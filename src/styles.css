@@ -171,3 +171,6 @@
   border-color: var(--primary);
   box-shadow: 0 0 0 1px var(--primary);
 }
+
+[data-score-state="clear"] { color: var(--success); }
+[data-score-state="flagged"] { color: var(--destructive); }

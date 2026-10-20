@@ -27,6 +27,18 @@ describe("accent-aware reading check", () => {
     expect(summarize(checkReading("the big red dog", "the red dog", aae)).errors).toBe(1);
   });
 
+  it("does not treat grammatical copula absence as a pronunciation allowance", () => {
+    for (const profile of [aae, southern, ga]) {
+      const result = checkReading("He is tall", "He tall", profile);
+      expect(result).toEqual([
+        { kind: "correct", expected: "he", heard: "he" },
+        { kind: "omitted", expected: "is" },
+        { kind: "correct", expected: "tall", heard: "tall" },
+      ]);
+      expect(summarize(result).errors).toBe(1);
+    }
+  });
+
   it("Southern accepts pin/pen merger and ay weakening", () => {
     expect(summarize(checkReading("ten pens at my time", "tin pins at mah tahm", southern)).errors).toBe(0);
   });
