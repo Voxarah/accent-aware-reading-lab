@@ -28,7 +28,7 @@ const clusterReduction: AccentRule = {
   example: "test → tes, walked → walk",
   source: { citation: `${S.green.citation} · ${S.labov72.citation}` },
   explains: (e, h) => {
-    if (/(st|sk|sp|nd|ld|ft|kt|pt|nt|lt|mp|ct)$/.test(e) && h === e.slice(0, -1)) return true;
+    if (/(st|sk|sp|nd|ld|ft|kt|pt|nt|lt|mp|ct|xt)$/.test(e) && h === e.slice(0, -1)) return true;
     if (/[^aeiou]ed$/.test(e) && (h === e.slice(0, -2) || h === e.slice(0, -1))) return true;
     return false;
   },
