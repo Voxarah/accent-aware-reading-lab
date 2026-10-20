@@ -11,3 +11,4 @@
 
 - Accent rules live in src/lib/accent/rules.ts; every rule must cite a published source, unsourced rules are excluded — why: fairness claims must be defensible.
 - Reading checks run on typed transcripts in the browser; no audio leaves the device — why: child-voice privacy rule.
+- Rule stacking (two rules on one word) lives in checker.ts findRule and only uses coda-edit intermediates — why: keeps stacking narrow so it can't excuse real misreadings.
