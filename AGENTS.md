@@ -10,7 +10,9 @@
 <!-- LOVABLE:END -->
 
 - Accent rules live in src/lib/accent/rules.ts; every rule must cite a published source, unsourced rules are excluded — why: fairness claims must be defensible.
-- Reading checks run on typed transcripts in the browser; no audio leaves the device — why: child-voice privacy rule.
+- Reading checks run in the browser; no audio leaves the device — why: child-voice privacy rule.
+- Speech-to-text runs in src/lib/audio/whisper.worker.ts (transformers.js, whisper-tiny q8, WebGPU with 3s probe then WASM); never the browser Web Speech API, which streams audio to Google/Apple — why: the privacy claim must survive a judge opening the network tab.
+- The worker biases decoding with a vernacular initial_prompt (aks, dis, brover...) — why: whisper otherwise "corrects" dialect spellings into Standard American English before the checker sees them.
 - Rule stacking (two rules on one word) lives in checker.ts findRule and only uses coda-edit intermediates — why: keeps stacking narrow so it can't excuse real misreadings.
 
 - Score comparison stays immediately after sample readers and scrolls into view after checks; scores are prototype word-match results, never clinical benchmark or intervention classifications — why: make disparity visible without claiming unvalidated clinical outcomes.
