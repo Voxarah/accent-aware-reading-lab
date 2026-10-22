@@ -61,8 +61,8 @@ function Index() {
         <p className="eyebrow">Voxarah Capture · alignment test bench</p>
         <h1 className="font-display mt-2 text-4xl leading-tight">Read it your way.<br />Mistakes still count.</h1>
         <div className="card mt-4 text-sm">
-          <p><span className="font-medium">Runs in your browser. Nothing is sent anywhere.</span> This page checks typed transcripts; it records no audio.</p>
-          <p className="mt-1 text-muted-foreground">Voice capture will transcribe on the device itself. That part is in development and not in this test bench yet.</p>
+          <p><span className="font-medium">Runs in your browser. Nothing is sent anywhere.</span> Typed transcripts are the primary path; no cloud speech API is ever called.</p>
+          <p className="mt-1 text-muted-foreground">Optional voice capture transcribes on the device itself — an early preview, in section 3 below.</p>
         </div>
       </header>
 
