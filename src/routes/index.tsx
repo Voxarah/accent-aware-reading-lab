@@ -5,6 +5,7 @@ import { PASSAGES } from "@/lib/accent/passages";
 import { PROFILES, OTHER_PROFILES_COUNT, OTHER_PROFILES_LABEL, type ProfileId } from "@/lib/accent/rules";
 import { checkReading, summarize, type WordResult } from "@/lib/accent/checker";
 import { PRESETS, READERS, type ReaderId } from "@/lib/accent/presets";
+import { VoiceCapture } from "@/components/VoiceCapture";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -91,6 +92,14 @@ function Index() {
         <p className="mt-2 text-xs text-muted-foreground">Sample transcripts are written for this demo. No child's reading is used.</p>
       </section>
 
+      <section className="mb-6">
+        <h2 className="label">3 · Or read aloud — on-device transcription</h2>
+        <p className="mt-1 text-xs text-muted-foreground">Optional. The sample readers above are the primary demo path.</p>
+        <div className="mt-2">
+          <VoiceCapture onTranscript={(t) => { setReader(null); setText(t); run(t); }} />
+        </div>
+      </section>
+
       {results && s && b && (
         <section ref={comparisonRef} aria-label="Reading score comparison" className="mb-6 grid scroll-mt-4 grid-cols-2 gap-3" aria-live="polite">
           <div className="card" >
@@ -117,7 +126,7 @@ function Index() {
       )}
 
       <section className="mb-6">
-        <h2 className="label">3 · Accent profile</h2>
+        <h2 className="label">4 · Accent profile</h2>
         <div className="mt-2 grid gap-2">
           {PROFILES.map((p) => (
             <Button variant="ghost" key={p.id} onClick={() => { setProf(p.id); if (text.trim()) run(text, p); else reset(); }} className="option h-auto whitespace-normal" data-active={p.id === prof}>
@@ -133,7 +142,7 @@ function Index() {
       </section>
 
       <section className="mb-6">
-        <h2 className="label">4 · Or type what was read</h2>
+        <h2 className="label">5 · Or type what was read</h2>
         <textarea value={text} onChange={(e) => { setText(e.target.value); setReader(null); reset(); }} rows={4}
           placeholder="Type exactly what the reader said, e.g. “Mike walk pas da ol des…”" className="field mt-2" />
         <Button variant="ghost" onClick={() => run(text)} disabled={!text.trim()} className="btn-primary mt-3 h-auto w-full">
