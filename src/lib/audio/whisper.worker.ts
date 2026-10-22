@@ -29,6 +29,20 @@ const VERNACULAR_PROMPT =
 let transcriber: AutomaticSpeechRecognitionPipeline | null = null;
 let loading: Promise<AutomaticSpeechRecognitionPipeline> | null = null;
 
+/** WebGPU can hang instead of throwing (e.g. headless/VM GPUs) — probe with a timeout. */
+async function webgpuAvailable(): Promise<boolean> {
+  try {
+    if (typeof navigator === "undefined" || !("gpu" in navigator)) return false;
+    const adapter = await Promise.race([
+      (navigator as Navigator & { gpu: { requestAdapter(): Promise<unknown> } }).gpu.requestAdapter(),
+      new Promise<null>((r) => setTimeout(() => r(null), 3000)),
+    ]);
+    return adapter != null;
+  } catch {
+    return false;
+  }
+}
+
 async function load(): Promise<AutomaticSpeechRecognitionPipeline> {
   if (transcriber) return transcriber;
   if (loading) return loading;
@@ -38,22 +52,14 @@ async function load(): Promise<AutomaticSpeechRecognitionPipeline> {
         post({ type: "progress", file: p.file, progress: Math.round(p.progress) });
       }
     };
-    try {
-      transcriber = (await pipeline("automatic-speech-recognition", MODEL_ID, {
-        device: "webgpu",
-        dtype: "q8",
-        progress_callback,
-      })) as AutomaticSpeechRecognitionPipeline;
-      post({ type: "ready", device: "WebGPU" });
-    } catch {
-      post({ type: "status", message: "WebGPU unavailable — falling back to WASM" });
-      transcriber = (await pipeline("automatic-speech-recognition", MODEL_ID, {
-        device: "wasm",
-        dtype: "q8",
-        progress_callback,
-      })) as AutomaticSpeechRecognitionPipeline;
-      post({ type: "ready", device: "WASM" });
-    }
+    const device = (await webgpuAvailable()) ? "webgpu" : "wasm";
+    if (device === "wasm") post({ type: "status", message: "WebGPU unavailable — using WASM runtime" });
+    transcriber = (await pipeline("automatic-speech-recognition", MODEL_ID, {
+      device,
+      dtype: "q8",
+      progress_callback,
+    })) as AutomaticSpeechRecognitionPipeline;
+    post({ type: "ready", device: device === "webgpu" ? "WebGPU" : "WASM" });
     return transcriber;
   })();
   try {
