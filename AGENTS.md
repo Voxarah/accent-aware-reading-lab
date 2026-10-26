@@ -16,3 +16,6 @@
 - Rule stacking (two rules on one word) lives in checker.ts findRule and only uses coda-edit intermediates — why: keeps stacking narrow so it can't excuse real misreadings.
 
 - Score comparison stays immediately after sample readers and scrolls into view after checks; scores are prototype word-match results, never clinical benchmark or intervention classifications — why: make disparity visible without claiming unvalidated clinical outcomes.
+- Passage Studio (src/lib/studio): the Meta model only proposes passage text + tags; verifier.ts (schema, verbatim tags, rule qualification, density, decodability, rule-derived readers) decides, with at most MAX_ATTEMPTS retries fed by diagnostics — why: generated material is never trusted unverified.
+- Generated-passage sample readers come from readers.ts (rules applied / planted miscues), never from the model; the model writes no product prose — why: unverified model output must not enter the bench through a side door.
+- Studio model name is read from the API response and configured via META_MODEL / META_API_KEY / META_API_BASE_URL secrets, never hardcoded — why: the receipt must name the exact model actually served.

@@ -6,6 +6,8 @@ import { PROFILES, OTHER_PROFILES_COUNT, OTHER_PROFILES_LABEL, type ProfileId } 
 import { checkReading, summarize, type WordResult } from "@/lib/accent/checker";
 import { PRESETS, READERS, type ReaderId } from "@/lib/accent/presets";
 import { VoiceCapture } from "@/components/VoiceCapture";
+import { PassageStudio, Receipt } from "@/components/PassageStudio";
+import { loadGenerated, saveGenerated, type GeneratedPassage } from "@/lib/studio/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,10 +32,15 @@ function Index() {
   const [baseline, setBaseline] = useState<WordResult[] | null>(null);
   const [open, setOpen] = useState<number | null>(null);
   const comparisonRef = useRef<HTMLElement>(null);
+  const [generated, setGenerated] = useState<GeneratedPassage[]>([]);
+  useEffect(() => { setGenerated(loadGenerated()); }, []);
+  const allPassages = [...PASSAGES, ...generated];
+  const removeGenerated = (id: string) => { const next = generated.filter((g) => g.id !== id); setGenerated(next); saveGenerated(next); if (pid === id) setPid(PASSAGES[0]?.id ?? "clusters"); };
   useEffect(() => {
     if (results) comparisonRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }, [results]);
-  const passage = PASSAGES.find((p) => p.id === pid) ?? PASSAGES[0];
+  const passage = allPassages.find((p) => p.id === pid) ?? PASSAGES[0];
+  const gen = generated.find((g) => g.id === passage?.id);
   const profile = PROFILES.find((p) => p.id === prof) ?? PROFILES[0];
   const ga = PROFILES.find((p) => p.id === "general-american");
   const s = results ? summarize(results) : null;
@@ -49,7 +56,7 @@ function Index() {
     setOpen(null);
   };
   const loadReader = (id: ReaderId) => {
-    const t = id === "control" ? passage.text : PRESETS[passage.id]?.[id] ?? passage.text;
+    const t = id === "control" ? passage.text : (gen ? gen.readers[id] : PRESETS[passage.id]?.[id]) ?? passage.text;
     const aae = PROFILES.find((p) => p.id === "aae");
     if (!aae) return;
     setProf("aae"); setReader(id); setText(t); run(t, aae);
@@ -69,13 +76,20 @@ function Index() {
       <section className="mb-6">
         <h2 className="label">1 · Passage</h2>
         <div className="mt-2 flex flex-wrap gap-2">
-          {PASSAGES.map((p) => (
+          {allPassages.map((p) => (
             <Button variant="ghost" key={p.id} onClick={() => { setPid(p.id); setReader(null); setText(""); reset(); }} className="chip h-auto whitespace-normal" data-active={p.id === pid}>{p.title}</Button>
           ))}
         </div>
         <div className="card mt-3">
           <p className="text-xs text-muted-foreground">Targets: {passage.targets}</p>
           <p className="font-display mt-2 text-xl leading-relaxed">{passage.text}</p>
+          {gen && (
+            <details className="mt-3">
+              <summary className="cursor-pointer text-xs font-semibold">Provenance receipt · generated with {gen.provenance.model}, verified by Voxarah</summary>
+              <Receipt p={gen.provenance} />
+              <Button variant="ghost" onClick={() => removeGenerated(gen.id)} className="mt-2 h-auto px-0 text-xs underline">Remove this passage</Button>
+            </details>
+          )}
         </div>
       </section>
 
@@ -89,7 +103,7 @@ function Index() {
             </Button>
           ))}
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">Sample transcripts are written for this demo. No child's reading is used.</p>
+        <p className="mt-2 text-xs text-muted-foreground">{gen ? "For this generated passage, sample readers are derived by the sourced rules from the text, not written by the model." : "Sample transcripts are written for this demo."} No child's reading is used.</p>
       </section>
 
       <section className="mb-6">
@@ -185,6 +199,14 @@ function Index() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="label">Passage Studio · teacher material</h2>
+        <p className="mt-1 text-xs text-muted-foreground">Generated with Meta's models, verified by the rules above. No child data is used here.</p>
+        <div className="mt-2">
+          <PassageStudio onAccept={(p) => { const next = [...generated, p]; setGenerated(next); saveGenerated(next); }} />
+        </div>
       </section>
     </main>
   );
