@@ -6,7 +6,8 @@ import { PROFILES, OTHER_PROFILES_COUNT, OTHER_PROFILES_LABEL, type ProfileId } 
 import { checkReading, summarize, type WordResult } from "@/lib/accent/checker";
 import { PRESETS, READERS, type ReaderId } from "@/lib/accent/presets";
 import { VoiceCapture } from "@/components/VoiceCapture";
-import { PassageStudio, Receipt } from "@/components/PassageStudio";
+import { ProvenanceRecord } from "@/components/PassageStudio";
+import { StudioGate } from "@/components/StudioGate";
 import { loadGenerated, saveGenerated, type GeneratedPassage } from "@/lib/studio/store";
 
 export const Route = createFileRoute("/")({
@@ -32,6 +33,7 @@ function Index() {
   const [baseline, setBaseline] = useState<WordResult[] | null>(null);
   const [open, setOpen] = useState<number | null>(null);
   const comparisonRef = useRef<HTMLElement>(null);
+  const [storageWarning, setStorageWarning] = useState("");
   const [generated, setGenerated] = useState<GeneratedPassage[]>([]);
   useEffect(() => { setGenerated(loadGenerated()); }, []);
   const allPassages = [...PASSAGES, ...generated];
@@ -68,7 +70,7 @@ function Index() {
         <p className="eyebrow">Voxarah Capture · alignment test bench</p>
         <h1 className="font-display mt-2 text-4xl leading-tight">Read it your way.<br />Mistakes still count.</h1>
         <div className="card mt-4 text-sm">
-          <p><span className="font-medium">Runs in your browser. Nothing is sent anywhere.</span> Typed transcripts are the primary path; no cloud speech API is ever called.</p>
+          <p><span className="font-medium">Reading checks and voice transcription run on your device.</span> No audio or reading transcript is sent to a cloud speech API. Teacher-only passage preparation uses Meta separately.</p>
           <p className="mt-1 text-muted-foreground">Optional voice capture transcribes on the device itself — an early preview, in section 3 below.</p>
         </div>
       </header>
@@ -85,8 +87,8 @@ function Index() {
           <p className="font-display mt-2 text-xl leading-relaxed">{passage.text}</p>
           {gen && (
             <details className="mt-3">
-              <summary className="cursor-pointer text-xs font-semibold">Provenance receipt · generated with {gen.provenance.model}, verified by Voxarah</summary>
-              <Receipt p={gen.provenance} />
+              <summary className="cursor-pointer text-xs font-semibold">Provenance record · model reported as {gen.provenance.model}, verified by Voxarah</summary>
+              <ProvenanceRecord p={gen.provenance} />
               <Button variant="ghost" onClick={() => removeGenerated(gen.id)} className="mt-2 h-auto px-0 text-xs underline">Remove this passage</Button>
             </details>
           )}
@@ -201,13 +203,8 @@ function Index() {
         )}
       </section>
 
-      <section className="mt-10">
-        <h2 className="label">Passage Studio · teacher material</h2>
-        <p className="mt-1 text-xs text-muted-foreground">Generated with Meta's models, verified by the rules above. No child data is used here.</p>
-        <div className="mt-2">
-          <PassageStudio onAccept={(p) => { const next = [...generated, p]; setGenerated(next); saveGenerated(next); }} />
-        </div>
-      </section>
+      <StudioGate onAccept={(p) => { const next = [...generated, p]; setGenerated(next); if (!saveGenerated(next)) setStorageWarning("This passage is available now but could not be saved in this browser."); }} />
+      {storageWarning && <p role="status" className="mt-3 text-sm">{storageWarning}</p>}
     </main>
   );
 }
