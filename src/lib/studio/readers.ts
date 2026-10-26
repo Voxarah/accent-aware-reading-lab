@@ -6,7 +6,8 @@ import { checkReading, normalize, summarize } from "@/lib/accent/checker";
 import { PROFILES } from "@/lib/accent/rules";
 import { dialectForm } from "./targets";
 
-const AAE = PROFILES.find((p) => p.id === "aae")!;
+const AAE = PROFILES.find((p) => p.id === "aae");
+if (!AAE) throw new Error("Sourced AAE profile is required");
 const RULE_ORDER = ["ask-metathesis", "th-stopping", "th-fronting", "cluster-reduction", "r-lessness", "pin-pen", "ing-in"];
 
 export type DerivedReaders = { dialect: string; miscue: string; mixed: string; ok: boolean; problems: string[] };

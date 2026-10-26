@@ -1,5 +1,16 @@
 # Roadmap
 
+## Studio audit hardening
+- [ ] Fix truthful connection copy, heuristic disclosure, provenance name and UTC date.
+- [ ] Revalidate stored candidates and regenerate readers; stamp engine and lexicon versions.
+- [ ] Exclude common initial-th words from density; show every attempt's diagnostics.
+- [ ] Add generation orchestration regression tests and JSON-mode compatibility handling.
+- [ ] Disable public generation; gate judge build with encrypted teacher-passcode session.
+- [ ] Add durable atomic daily spend reservations (requires Lovable Cloud and configured pricing/ceiling).
+- [ ] Verify real Meta connection and JSON mode once credentials/credits are available.
+- [ ] Put teacher passcode in submission testing instructions (requires chosen passcode).
+- [ ] Optional server signing only after real connection verification; not required for provenance record.
+
 ## Audit follow-up (done)
 - [x] Bring score comparison directly after sample readers and reveal it after checks.
 - [x] Add nonclinical result labels and disclose score limitations.

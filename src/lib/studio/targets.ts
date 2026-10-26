@@ -10,7 +10,7 @@ export type TargetId = (typeof TARGET_IDS)[number];
 
 export const TARGETS: { id: TargetId; label: string; hint: string; minDensity: number }[] = [
   { id: "cluster-reduction", label: "Final consonant clusters", hint: "desk, lamp, walked", minDensity: 3 },
-  { id: "th-stopping", label: "Initial th", hint: "this, them, think", minDensity: 3 },
+  { id: "th-stopping", label: "Initial th", hint: "think, thick, thin", minDensity: 3 },
   { id: "r-lessness", label: "r after vowels", hint: "car, door, sister", minDensity: 3 },
   { id: "pin-pen", label: "pin / pen", hint: "pen, ten, them", minDensity: 3 },
   { id: "ask-metathesis", label: "ask → aks", hint: "ask, asked", minDensity: 2 },
@@ -61,3 +61,7 @@ export function dialectForm(ruleId: string, w: string): string | undefined {
 }
 
 export const qualifies = (ruleId: string, w: string) => dialectForm(ruleId, w) !== undefined;
+
+// Pronunciation qualification remains separate from instructional-density eligibility.
+const COMMON_TH = new Set(["the", "this", "that", "these", "those", "they", "them", "their", "there", "then"]);
+export const densityEligible = (id: TargetId, word: string) => qualifies(id, word) && !(id === "th-stopping" && COMMON_TH.has(word));
