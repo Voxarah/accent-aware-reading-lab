@@ -2,7 +2,7 @@
 // until these deterministic checks pass. Pure module: runs on server and in tests.
 import { z } from "zod";
 import { normalize } from "@/lib/accent/checker";
-import { TARGET_IDS, TARGETS, qualifies, type TargetId } from "./targets";
+import { TARGET_IDS, TARGETS, qualifies, densityEligible, type TargetId } from "./targets";
 import { auditDecodability, type DecodabilityAudit, type Grade } from "./decodability";
 import { deriveReaders, type DerivedReaders } from "./readers";
 
@@ -39,13 +39,19 @@ export function verifyCandidate(raw: unknown, params: StudioParams): Verificatio
   const c = parsed.data;
   const diagnostics: string[] = [];
   const words = c.text.split(/\s+/).map(normalize).filter(Boolean);
-  const wordSet = new Set(words);
+  const wordSet = new Set(c.text.split(/\s+/).map((w) => w.replace(/^[^a-zA-Z]+|[^a-zA-Z]+$/g, "")).filter(Boolean));
 
   // Phase 1 + 2: each claimed tag must appear verbatim and qualify under the published rule.
   const tags: TagCheck[] = c.targets.map((t) => {
     const w = normalize(t.word);
-    return { word: w, target: t.target, inText: wordSet.has(w), qualifies: qualifies(t.target, w) };
+    return { word: w, target: t.target, inText: wordSet.has(t.word), qualifies: qualifies(t.target, w) };
   });
+  const claims = new Set<string>();
+  for (const t of c.targets) {
+    const key = `${t.target}:${normalize(t.word)}`;
+    if (claims.has(key)) diagnostics.push(`Duplicate claim "${t.word}" for ${t.target}.`);
+    claims.add(key);
+  }
   for (const t of tags) {
     if (!t.inText) diagnostics.push(`Claimed token "${t.word}" does not appear verbatim in the passage.`);
     else if (!t.qualifies) diagnostics.push(`Claimed "${t.word}" for ${t.target}, but the sourced rule does not apply to it (wrong position or pattern).`);
@@ -55,7 +61,7 @@ export function verifyCandidate(raw: unknown, params: StudioParams): Verificatio
   const verifiedWords = (id: TargetId) => new Set(tags.filter((t) => t.target === id && t.inText && t.qualifies).map((t) => t.word));
   const density = params.targets.map((id) => {
     const vs = verifiedWords(id);
-    const verified = words.filter((w) => vs.has(w)).length;
+    const verified = words.filter((w) => vs.has(w) && densityEligible(id, w)).length;
     const required = TARGETS.find((t) => t.id === id)?.minDensity ?? 3;
     if (verified < required) diagnostics.push(`Target ${id}: density ${verified} of ${required} required verified tokens.`);
     return { target: id, verified, required };
