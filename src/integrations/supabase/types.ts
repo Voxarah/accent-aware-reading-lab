@@ -14,13 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      studio_daily_budget: {
+        Row: {
+          day: string
+          reserved_usd: number
+        }
+        Insert: {
+          day: string
+          reserved_usd?: number
+        }
+        Update: {
+          day?: string
+          reserved_usd?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reserve_studio_budget: {
+        Args: { p_amount: number; p_ceiling: number }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
