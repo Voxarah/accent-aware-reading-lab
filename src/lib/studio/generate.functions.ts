@@ -30,7 +30,8 @@ export type AttemptLog = { attempt: number; diagnostics: string[]; usage: Usage 
 export type StudioResult =
   | { status: "not-configured" }
   | { status: "error"; message: string; attempts: AttemptLog[] }
-  | { status: "verified" | "refused"; model: string; generatedAt: string; attempts: AttemptLog[]; usage: Usage; verification: Verification };
+  | StudioDone;
+export type StudioDone = { status: "verified" | "refused"; model: string; generatedAt: string; attempts: AttemptLog[]; usage: Usage; verification: Verification };
 
 export const generatePassage = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Params.parse(d))

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { generatePassage, MAX_ATTEMPTS, type StudioResult } from "@/lib/studio/generate.functions";
+import { generatePassage, MAX_ATTEMPTS, type StudioResult, type StudioDone } from "@/lib/studio/generate.functions";
 import { TARGETS, type TargetId } from "@/lib/studio/targets";
 import { GRADES, type Grade } from "@/lib/studio/decodability";
 import type { GeneratedPassage } from "@/lib/studio/store";
@@ -43,7 +43,7 @@ export function PassageStudio({ onAccept }: { onAccept: (p: GeneratedPassage) =>
     finally { setBusy(false); }
   };
 
-  const toPassage = (r: Extract<StudioResult, { status: "verified" }>): GeneratedPassage | null => {
+  const toPassage = (r: StudioDone): GeneratedPassage | null => {
     const v = r.verification;
     if (!v.candidate || !v.decodability || !v.readers) return null;
     const ok = v.tags.filter((t) => t.inText && t.qualifies).length;
