@@ -72,7 +72,7 @@ describe("generation orchestration", () => {
     const r = await runGeneration(params, options(request)); expect(r.status).toBe("error"); expect(request).toHaveBeenCalledTimes(1);
   });
   it("explicit plain-text mode still verifies strict JSON", async () => {
-    const request = vi.fn(async () => reply(candidate));
+    const request = vi.fn<typeof fetch>(async () => reply(candidate));
     const r = await runGeneration(params, { ...options(request), jsonMode: false });
     expect(r.status).toBe("verified"); expect(JSON.parse(String(request.mock.calls[0]?.[1]?.body))).not.toHaveProperty("response_format");
   });
