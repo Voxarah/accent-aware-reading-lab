@@ -55,11 +55,14 @@ export async function runGeneration(data: StudioParams, options: GenerationOptio
       const choice = json.choices?.[0];
       usage = { input: json.usage?.prompt_tokens ?? 0, output: json.usage?.completion_tokens ?? 0 };
       total.input += usage.input; total.output += usage.output;
-      console.log(JSON.stringify({ event: "studio.usage", attempt, model: json.model ?? null, ...usage }));
-      if (choice?.message?.refusal || choice?.finish_reason === "content_filter") return { status: "error", message: "The model refused this request. Nothing was added.", attempts };
       if (!json.model) return { status: "error", message: "Meta did not identify the served model; a provenance record cannot be issued.", attempts };
       if (servedModel && servedModel !== json.model) return { status: "error", message: "The served model changed between attempts. Nothing was added.", attempts };
       servedModel = json.model;
+      const rate = options.pricing?.[servedModel];
+      if (options.pricing && !rate) return { status: "error", message: `The served model "${servedModel}" has no verified pricing on file. Nothing was added.`, attempts };
+      const estCost = rate ? (usage.input * rate.input + usage.output * rate.output) / 1_000_000 : null;
+      console.log(JSON.stringify({ event: "studio.usage", attempt, model: servedModel, ...usage, estCostUsd: estCost }));
+      if (choice?.message?.refusal || choice?.finish_reason === "content_filter") return { status: "error", message: "The model refused this request. Nothing was added.", attempts };
       content = choice?.message?.content ?? "";
     } catch {
       console.error("studio.meta_api_unreachable");
