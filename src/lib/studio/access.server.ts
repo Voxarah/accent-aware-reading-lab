@@ -4,7 +4,9 @@ import { judgeEnabled } from "./policy";
 
 export function enabledHere() {
   setResponseHeader("Cache-Control", "no-store");
-  return judgeEnabled(process.env["STUDIO_ENABLED"], process.env["STUDIO_JUDGE_ORIGIN"], getRequestUrl().origin);
+  const origin = getRequestUrl().origin;
+  if (import.meta.env.DEV && origin === "http://localhost:8080") return process.env["STUDIO_ENABLED"] === "true";
+  return judgeEnabled(process.env["STUDIO_ENABLED"], process.env["STUDIO_JUDGE_ORIGIN"], origin);
 }
 export async function studioSession() {
   const password = process.env["STUDIO_SESSION_SECRET"];

@@ -7,7 +7,8 @@ import { checkReading, summarize } from "@/lib/accent/checker";
 import { PROFILES } from "@/lib/accent/rules";
 import { PASSAGES } from "@/lib/accent/passages";
 
-const aae = PROFILES.find((p) => p.id === "aae")!;
+const aae = PROFILES.find((p) => p.id === "aae");
+if (!aae) throw new Error("AAE test profile missing");
 const GOOD_TEXT = "Ben sent ten pens to his friend Jen. She went to the desk and kept them in a box. Then Ben left a lamp at the camp. It is the best gift.";
 const GOOD = {
   text: GOOD_TEXT,
@@ -86,6 +87,7 @@ describe("rule-derived readers", () => {
       const r = deriveReaders(t);
       expect(r.problems, t).toEqual([]);
       expect(summarize(checkReading(t, r.dialect, aae)).errors).toBe(0);
+      expect(summarize(checkReading(t, r.miscue, aae)).errors).toBeGreaterThanOrEqual(3);
       expect(summarize(checkReading(t, r.mixed, aae)).errors).toBe(1);
     }
   });
