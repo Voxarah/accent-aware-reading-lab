@@ -12,6 +12,8 @@ export function VoiceCapture({ onTranscript }: { onTranscript: (text: string) =>
   const [pct, setPct] = useState<number | null>(null);
   const workerRef = useRef<Worker | null>(null);
   const recorderRef = useRef<MicRecorder | null>(null);
+  const onTranscriptRef = useRef(onTranscript);
+  onTranscriptRef.current = onTranscript;
 
   const say = (line: string) => setLines((ls) => [...ls.slice(-30), line]);
 
