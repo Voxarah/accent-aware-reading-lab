@@ -92,6 +92,22 @@ describe("generation orchestration", () => {
     const request = vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(candidate) } }] })));
     expect((await runGeneration(params, options(request))).status).toBe("error");
   });
+  it("refuses a served model with no verified pricing on file", async () => {
+    const request = vi.fn(async () => reply(candidate, "unpriced-model"));
+    const r = await runGeneration(params, { ...options(request), pricing: { "requested-test-model": { input: 1, output: 2 } } });
+    expect(r.status).toBe("error");
+    if (r.status === "error") expect(r.message).toContain("unpriced-model");
+  });
+  it("logs estimated cost per call from the served model's verified rate", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const request = vi.fn(async () => reply(candidate));
+    const r = await runGeneration(params, { ...options(request), pricing: { "meta-served-test-model": { input: 1.25, output: 4.25 } } });
+    expect(r.status).toBe("verified");
+    const entry = JSON.parse(String(log.mock.calls.map((c) => c[0]).find((m) => String(m).includes("studio.usage"))));
+    expect(entry.model).toBe("meta-served-test-model");
+    expect(entry.estCostUsd).toBeCloseTo((100 * 1.25 + 50 * 4.25) / 1_000_000, 9);
+    log.mockRestore();
+  });
   it("requires a global reservation before every attempt", async () => {
     const request = vi.fn(async () => reply({ invalid: true }));
     const reserve = vi.fn().mockResolvedValueOnce(true).mockResolvedValueOnce(false);

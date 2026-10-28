@@ -1,7 +1,9 @@
 import { TARGETS } from "./targets";
 import { verifyCandidate, WORD_RANGE, type StudioParams, type Verification } from "./verifier";
 export const MAX_ATTEMPTS = 2;
-export const MAX_OUTPUT_TOKENS = 700;
+// Muse Spark is a reasoning model: hard requests burn 4k+ tokens on reasoning
+// before any JSON, so the cap must cover worst-case reasoning plus the payload.
+export const MAX_OUTPUT_TOKENS = 8192;
 // Stable prefix first; provider-side caching, if offered, is not assumed or discounted.
 const SYSTEM = `You write short reading passages for a phonics test bench.
 Return ONLY a JSON object: {"text": string, "targets": [{"word": string, "target": string}]}. No other keys. No commentary, titles, tips or explanations.
@@ -18,10 +20,14 @@ export type AttemptLog = { attempt: number; diagnostics: string[]; usage: Usage 
 export type StudioDone = { status: "verified" | "refused"; model: string; generatedAt: string; attempts: AttemptLog[]; usage: Usage; verification: Verification };
 export type StudioResult = { status: "not-configured" } | { status: "error"; message: string; attempts: AttemptLog[] } | StudioDone;
 export type Message = { role: string; content: string };
+export type ModelRate = { input: number; output: number };
 export type GenerationOptions = {
   model: string; key: string; base: string; jsonMode: boolean;
   request: typeof fetch;
   reserve: (messages: Message[]) => Promise<boolean>;
+  // Verified pricing keyed by served model ID. When present, a response naming
+  // a model with no verified rate is refused, same as any other failed check.
+  pricing?: Record<string, ModelRate>;
 };
 export async function runGeneration(data: StudioParams, options: GenerationOptions): Promise<StudioResult> {
   const [lo, hi] = WORD_RANGE[data.grade];
@@ -51,11 +57,14 @@ export async function runGeneration(data: StudioParams, options: GenerationOptio
       const choice = json.choices?.[0];
       usage = { input: json.usage?.prompt_tokens ?? 0, output: json.usage?.completion_tokens ?? 0 };
       total.input += usage.input; total.output += usage.output;
-      console.log(JSON.stringify({ event: "studio.usage", attempt, model: json.model ?? null, ...usage }));
-      if (choice?.message?.refusal || choice?.finish_reason === "content_filter") return { status: "error", message: "The model refused this request. Nothing was added.", attempts };
       if (!json.model) return { status: "error", message: "Meta did not identify the served model; a provenance record cannot be issued.", attempts };
       if (servedModel && servedModel !== json.model) return { status: "error", message: "The served model changed between attempts. Nothing was added.", attempts };
       servedModel = json.model;
+      const rate = options.pricing?.[servedModel];
+      if (options.pricing && !rate) return { status: "error", message: `The served model "${servedModel}" has no verified pricing on file. Nothing was added.`, attempts };
+      const estCost = rate ? (usage.input * rate.input + usage.output * rate.output) / 1_000_000 : null;
+      console.log(JSON.stringify({ event: "studio.usage", attempt, model: servedModel, ...usage, estCostUsd: estCost }));
+      if (choice?.message?.refusal || choice?.finish_reason === "content_filter") return { status: "error", message: "The model refused this request. Nothing was added.", attempts };
       content = choice?.message?.content ?? "";
     } catch {
       console.error("studio.meta_api_unreachable");

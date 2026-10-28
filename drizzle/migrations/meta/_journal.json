@@ -15,6 +15,13 @@
       "when": 1793157044984,
       "tag": "0001_enforce_studio_ten_dollar_ceiling",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793158327197,
+      "tag": "0002_studio_window_budget_ceiling",
+      "breakpoints": true
     }
   ]
 }

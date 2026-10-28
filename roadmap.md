@@ -7,8 +7,11 @@
 - [x] Add generation orchestration regression tests and JSON-mode compatibility handling.
 - [x] Disable public generation; gate judge build with encrypted teacher-passcode session; verify unlock/refusal/lock in browser.
 - [x] Add durable atomic daily spend reservations: $10 shared per midnight-UTC day, conservative per-attempt reservations; verify concurrent ledger tests.
-- [ ] Verify real Meta connection and JSON mode. Blocked: META_API_KEY, exact META_MODEL, verified provider rates and credits; all paid calls fail closed until pricing is configured.
-- [ ] Pre-generate 1–2 accepted passages and reload before demo. Blocked: verified Meta connection.
+- [x] Verify real Meta connection and JSON mode: muse-spark-1.3 on api.meta.ai/v1, 3/3 clean structured parses; output cap raised to 8192 (reasoning tokens); pricing keyed to served model ID, unpriced models refused.
+- [x] Prove spend ceilings trip: 1¢ ceiling rejects second half-cent, $10 daily cap rejects $11, $40 window cap rejects over-limit; ledger durable.
+- [x] Exercise retry/refusal live: fault-injected bad output → exactly one retry, refusal with both attempts' diagnostics, nothing saved.
+- [x] Clean end-to-end grade-2 generation: verified, provenance record with runtime model ID, density, decodability, versions; rule-derived readers re-scored. Measured ~$0.01–0.03 per call.
+- [ ] Pre-generate 1–2 accepted passages through the judge-build UI and reload before demo. Needs the teacher passcode in the preview.
 - [ ] Copy chosen teacher passcode into the submission's private testing instructions. Blocked: owner-only chosen value; docs/judge-testing.md provides instructions without exposing it.
 - Optional server signing deferred until after real connection verification; not required for the unsigned provenance record.
 

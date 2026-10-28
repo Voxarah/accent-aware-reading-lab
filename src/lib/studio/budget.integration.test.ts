@@ -7,7 +7,7 @@ describe.skipIf(!enabled)("durable shared daily ceiling", () => {
     const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
     if (!url || !key) throw new Error("Ledger test requires server configuration");
     const response = await fetch(`${url}/rest/v1/${path}`, { method: body === undefined ? "GET" : "POST",
-      headers: { apikey: key, "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
+      headers: { apikey: key, "Content-Type": "application/json" }, body: body === undefined ? null : JSON.stringify(body) });
     if (!response.ok) throw new Error(`Ledger test failed (${response.status})`);
     return response.json();
   }
