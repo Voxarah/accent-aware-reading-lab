@@ -18,10 +18,14 @@ export type AttemptLog = { attempt: number; diagnostics: string[]; usage: Usage 
 export type StudioDone = { status: "verified" | "refused"; model: string; generatedAt: string; attempts: AttemptLog[]; usage: Usage; verification: Verification };
 export type StudioResult = { status: "not-configured" } | { status: "error"; message: string; attempts: AttemptLog[] } | StudioDone;
 export type Message = { role: string; content: string };
+export type ModelRate = { input: number; output: number };
 export type GenerationOptions = {
   model: string; key: string; base: string; jsonMode: boolean;
   request: typeof fetch;
   reserve: (messages: Message[]) => Promise<boolean>;
+  // Verified pricing keyed by served model ID. When present, a response naming
+  // a model with no verified rate is refused, same as any other failed check.
+  pricing?: Record<string, ModelRate>;
 };
 export async function runGeneration(data: StudioParams, options: GenerationOptions): Promise<StudioResult> {
   const [lo, hi] = WORD_RANGE[data.grade];
