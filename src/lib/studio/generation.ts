@@ -1,9 +1,9 @@
 import { TARGETS } from "./targets";
 import { verifyCandidate, WORD_RANGE, type StudioParams, type Verification } from "./verifier";
 export const MAX_ATTEMPTS = 2;
-// Muse Spark is a reasoning model: most completion tokens are reasoning, so the
-// cap must cover reasoning plus the JSON payload or every call ends at length.
-export const MAX_OUTPUT_TOKENS = 4096;
+// Muse Spark is a reasoning model: hard requests burn 4k+ tokens on reasoning
+// before any JSON, so the cap must cover worst-case reasoning plus the payload.
+export const MAX_OUTPUT_TOKENS = 8192;
 // Stable prefix first; provider-side caching, if offered, is not assumed or discounted.
 const SYSTEM = `You write short reading passages for a phonics test bench.
 Return ONLY a JSON object: {"text": string, "targets": [{"word": string, "target": string}]}. No other keys. No commentary, titles, tips or explanations.
