@@ -73,6 +73,16 @@ function Index() {
           <p><span className="font-medium">Reading checks and voice transcription run on your device.</span> No audio or reading transcript is sent to a cloud speech API. Teacher-only passage preparation uses Meta separately.</p>
           <p className="mt-1 text-muted-foreground">Optional voice capture transcribes on the device itself — an early preview, in section 3 below.</p>
         </div>
+        <details className="card mt-3 text-sm" open>
+          <summary className="cursor-pointer font-semibold">Judge quickstart · 60 seconds</summary>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            <li>Under <span className="font-medium">2 · Try a sample reader</span>, press <span className="font-medium">Dialect reader</span>. The literal check flags accent differences; Voxarah does not.</li>
+            <li>Press <span className="font-medium">Mixed reader</span>. One real mistake stays flagged — the rules don't go easy.</li>
+            <li>Tap any word in the results to see the rule and its published source.</li>
+            <li>Pick a <span className="font-medium">Studio</span> passage (if shown) and open its provenance record: Meta proposed the text, Voxarah's rules verified it.</li>
+            <li>Optional: section 3 transcribes your voice on this device. Nothing is uploaded.</li>
+          </ol>
+        </details>
       </header>
 
       <section className="mb-6">
