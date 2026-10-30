@@ -92,3 +92,11 @@ describe("rule-derived readers", () => {
     }
   });
 });
+
+describe("refusal demonstration", () => {
+  it("requires more target tokens than the grade 2 word cap, so nothing can pass", async () => {
+    const { requiredDensity, WORD_RANGE } = await import("./verifier");
+    expect(requiredDensity("cluster-reduction", { grade: 2, theme: "school", targets: ["cluster-reduction"], demoRefusal: true })).toBe(61);
+    expect(requiredDensity("cluster-reduction", { grade: 2, theme: "school", targets: ["cluster-reduction"], demoRefusal: true })).toBeGreaterThan(WORD_RANGE[2][1]);
+  });
+});
