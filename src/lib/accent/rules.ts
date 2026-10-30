@@ -2,7 +2,8 @@
 // expected word and what was read. Every rule MUST cite a published source;
 // unsourced rules are not allowed in this file.
 
-export type Source = { citation: string };
+export type SourceLink = { label: string; url: string };
+export type Source = { citation: string; links: SourceLink[] };
 
 export type AccentRule = {
   id: string;
@@ -12,13 +13,17 @@ export type AccentRule = {
   explains: (expected: string, heard: string) => boolean;
 };
 
+type Ref = { citation: string; link: SourceLink };
+const wc = (isbn: string): string => `https://search.worldcat.org/search?q=bn:${isbn}`;
 const S = {
-  green: { citation: "Green, L. J. (2002). African American English: A Linguistic Introduction. Cambridge University Press." },
-  labov72: { citation: "Labov, W. (1972). Language in the Inner City: Studies in the Black English Vernacular. University of Pennsylvania Press." },
-  rickford: { citation: "Rickford, J. R. (1999). African American Vernacular English: Features, Evolution, Educational Implications. Blackwell." },
-  wolfram: { citation: "Wolfram, W. & Schilling, N. (2016). American English: Dialects and Variation (3rd ed.). Wiley-Blackwell." },
-  anae: { citation: "Labov, W., Ash, S. & Boberg, C. (2006). The Atlas of North American English. Mouton de Gruyter." },
-};
+  green: { citation: "Green, L. J. (2002). African American English: A Linguistic Introduction. Cambridge University Press.", link: { label: "Green 2002 · DOI", url: "https://doi.org/10.1017/CBO9780511800306" } },
+  labov72: { citation: "Labov, W. (1972). Language in the Inner City: Studies in the Black English Vernacular. University of Pennsylvania Press.", link: { label: "Labov 1972 · WorldCat", url: wc("0812210514") } },
+  rickford: { citation: "Rickford, J. R. (1999). African American Vernacular English: Features, Evolution, Educational Implications. Blackwell.", link: { label: "Rickford 1999 · WorldCat", url: wc("0631212450") } },
+  wolfram: { citation: "Wolfram, W. & Schilling, N. (2016). American English: Dialects and Variation (3rd ed.). Wiley-Blackwell.", link: { label: "Wolfram & Schilling 2016 · WorldCat", url: wc("9781118390221") } },
+  anae: { citation: "Labov, W., Ash, S. & Boberg, C. (2006). The Atlas of North American English. Mouton de Gruyter.", link: { label: "ANAE 2006 · DOI", url: "https://doi.org/10.1515/9783110167467" } },
+} satisfies Record<string, Ref>;
+
+const cite = (...refs: Ref[]): Source => ({ citation: refs.map((r) => r.citation).join(" · "), links: refs.map((r) => r.link) });
 
 const V = "aeiou";
 
@@ -26,7 +31,7 @@ const clusterReduction: AccentRule = {
   id: "cluster-reduction",
   name: "Final consonant cluster reduction",
   example: "test → tes, walked → walk",
-  source: { citation: `${S.green.citation} · ${S.labov72.citation}` },
+  source: cite(S.green, S.labov72),
   explains: (e, h) => {
     if (/(st|sk|sp|nd|ld|ft|kt|pt|nt|lt|mp|ct|xt)$/.test(e) && h === e.slice(0, -1)) return true;
     if (/[^aeiou]ed$/.test(e) && (h === e.slice(0, -2) || h === e.slice(0, -1))) return true;
@@ -38,7 +43,7 @@ const thStopping: AccentRule = {
   id: "th-stopping",
   name: "Initial th → d / t",
   example: "this → dis, think → tink",
-  source: { citation: `${S.green.citation} · ${S.rickford.citation}` },
+  source: cite(S.green, S.rickford),
   explains: (e, h) => {
     if (!e.startsWith("th")) return false;
     const rest = e.slice(2);
@@ -51,7 +56,7 @@ const thFronting: AccentRule = {
   id: "th-fronting",
   name: "Non-initial th → f / v",
   example: "with → wif, brother → brover",
-  source: { citation: S.green.citation },
+  source: cite(S.green),
   explains: (e, h) => {
     for (let i = 1; i < e.length - 1; i++) {
       if (e.slice(i, i + 2) !== "th") continue;
@@ -65,7 +70,7 @@ const rLessness: AccentRule = {
   id: "r-lessness",
   name: "r after vowels not pronounced",
   example: "car → cah, more → mo, sister → sistah",
-  source: { citation: S.wolfram.citation },
+  source: cite(S.wolfram),
   explains: (e, h) => {
     if (!/[aeiou]r/.test(e)) return false;
     const c = new Set([
@@ -85,7 +90,7 @@ const pinPen: AccentRule = {
   id: "pin-pen",
   name: "pin / pen merger (e → i before n, m)",
   example: "pen → pin, ten → tin",
-  source: { citation: `${S.anae.citation} · ${S.wolfram.citation}` },
+  source: cite(S.anae, S.wolfram),
   explains: (e, h) => {
     for (let i = 0; i < e.length - 1; i++) {
       if (e[i] === "e" && (e[i + 1] === "n" || e[i + 1] === "m")) {
@@ -100,7 +105,7 @@ const ingToIn: AccentRule = {
   id: "ing-in",
   name: "-ing → -in'",
   example: "running → runnin'",
-  source: { citation: S.wolfram.citation },
+  source: cite(S.wolfram),
   explains: (e, h) => e.length > 4 && e.endsWith("ing") && h === e.slice(0, -1),
 };
 
@@ -108,7 +113,7 @@ const ayGlide: AccentRule = {
   id: "ay-glide-weakening",
   name: "/ay/ glide weakening",
   example: "time → tahm, my → mah",
-  source: { citation: S.anae.citation },
+  source: cite(S.anae),
   explains: (e, h) => {
     const m = e.match(/^([^aeiou]*)i([^aeiou]+)e$/);
     if (m && h === `${m[1]}ah${m[2]}`) return true;
@@ -121,7 +126,7 @@ const askMetathesis: AccentRule = {
   id: "ask-metathesis",
   name: "ask → aks / ax (metathesis)",
   example: "ask → aks, asked → axed",
-  source: { citation: `${S.green.citation} · ${S.wolfram.citation}` },
+  source: cite(S.green, S.wolfram),
   explains: (e, h) => {
     const m = e.match(/^ask(s|ed|ing)?$/);
     if (!m) return false;
