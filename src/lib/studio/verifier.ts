@@ -18,7 +18,7 @@ export const WORD_RANGE: Record<Grade, [number, number]> = { 1: [20, 45], 2: [25
 
 // demoRefusal: judge demonstration only. Requires more verified tokens per target than
 // the grade's word cap allows, so no passage can pass and the normal pipeline must refuse.
-export type StudioParams = { grade: Grade; theme: string; targets: TargetId[]; demoRefusal?: boolean };
+export type StudioParams = { grade: Grade; theme: string; targets: TargetId[]; demoRefusal?: boolean | undefined };
 export function requiredDensity(id: TargetId, params: StudioParams): number {
   if (params.demoRefusal) return WORD_RANGE[params.grade][1] + 1;
   return TARGETS.find((t) => t.id === id)?.minDensity ?? 3;
