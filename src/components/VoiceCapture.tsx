@@ -36,7 +36,7 @@ export function VoiceCapture({ onTranscript }: { onTranscript: (text: string) =>
     } else if (m.type === "result") {
       say(`Transcript received (${m.text.split(/\s+/).filter(Boolean).length} words) — running accent-fair check`);
       setPhase("ready");
-      if (m.text) onTranscript(m.text);
+      if (m.text) onTranscriptRef.current(m.text);
       else say("No speech detected — try again, closer to the mic.");
     } else if (m.type === "error") {
       say(`Error: ${m.message}`);
