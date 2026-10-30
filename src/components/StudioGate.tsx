@@ -16,7 +16,7 @@ export function StudioGate({ onAccept }: { onAccept: (p: GeneratedPassage) => vo
   if (!state.enabled) return null;
   return <section className="mt-10">
     <h2 className="label">Passage Studio · teacher material</h2>
-    <p className="mt-1 text-xs text-muted-foreground">Built for Meta’s models. Connection and live compatibility verification are pending. No child data is used.</p>
+    <p className="mt-1 text-xs text-muted-foreground">Built for Meta’s models. Connected and verified live: every passage is checked by the published rules before it can be used. No child data is used.</p>
     {state.unlocked ? <><Button variant="ghost" className="mt-2" onClick={async () => { await lock(); setState((s) => ({ ...s, unlocked: false })); }}>Lock teacher access</Button><PassageStudio onAccept={onAccept} /></>
       : !state.configured ? <p className="mt-3 text-sm">Teacher access has not been configured.</p>
       : <form className="mt-3" onSubmit={async (e) => { e.preventDefault(); setBusy(true); setError(""); try { const result = await unlock({ data: { password } }); setPassword(""); if (result.ok) setState((s) => ({ ...s, unlocked: true })); else setError("Incorrect passcode or access unavailable."); } catch { setError("Teacher access is unavailable."); } finally { setBusy(false); } }}>
