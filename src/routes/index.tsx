@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PASSAGES } from "@/lib/accent/passages";
-import { PROFILES, OTHER_PROFILES_COUNT, OTHER_PROFILES_LABEL, type ProfileId } from "@/lib/accent/rules";
+import { PROFILES, OTHER_PROFILES_COUNT, OTHER_PROFILES_LABEL, type ProfileId, type Source, type AccentRule } from "@/lib/accent/rules";
 import { checkReading, summarize, type WordResult } from "@/lib/accent/checker";
 import { PRESETS, READERS, type ReaderId } from "@/lib/accent/presets";
 import { VoiceCapture } from "@/components/VoiceCapture";
@@ -192,6 +192,7 @@ function Index() {
           </p>
           <p className="mt-3 text-xs text-muted-foreground">Tap any word to see why.</p>
           {open !== null && results[open] && <Detail r={results[open]} />}
+          <AppliedRules results={results} profileName={profile.name} passageTitle={passage.title} />
         </section>
       )}
 
@@ -207,6 +208,7 @@ function Index() {
                 <p className="font-medium">{r.name}</p>
                 <p className="text-sm text-muted-foreground">{r.example}</p>
                 <p className="mt-2 text-xs italic text-muted-foreground">{r.source.citation}</p>
+                <SourceLinks source={r.source} />
               </li>
             ))}
           </ul>
@@ -231,9 +233,53 @@ function Stat({ n, label, tone }: { n: number; label: string; tone: string }) {
 function Detail({ r }: { r: WordResult }) {
   const t =
     r.kind === "correct" ? "Read exactly as written."
-    : r.kind === "accent" ? `“${r.expected}” → “${r.heard}”: ${r.rule.name}. Not counted as an error. Source: ${r.rule.source.citation}`
+    : r.kind === "accent" ? `“${r.expected}” → “${r.heard}”: ${r.rule.name} (rule ${r.rule.id}). Not counted as an error. Source: ${r.rule.source.citation}`
     : r.kind === "substituted" ? `“${r.expected}” read as “${r.heard}”. No sourced accent rule explains this — counted as an error.`
     : r.kind === "omitted" ? `“${r.expected}” was skipped — counted as an error.`
     : `“${r.heard}” was added — counted as an error.`;
-  return <p className="mt-4 rounded-md bg-muted p-3 text-sm">{t}</p>;
+  return (
+    <div className="mt-4 rounded-md bg-muted p-3 text-sm">
+      <p>{t}</p>
+      {r.kind === "accent" && <SourceLinks source={r.rule.source} />}
+    </div>
+  );
+}
+
+function SourceLinks({ source }: { source: Source }) {
+  return (
+    <p className="mt-1 flex flex-wrap gap-x-3 text-xs">
+      {source.links.map((l) => (
+        <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{l.label} ↗</a>
+      ))}
+    </p>
+  );
+}
+
+function AppliedRules({ results, profileName, passageTitle }: { results: WordResult[]; profileName: string; passageTitle: string }) {
+  const byRule = new Map<string, { rule: AccentRule; words: string[] }>();
+  for (const r of results) {
+    if (r.kind !== "accent") continue;
+    const e = byRule.get(r.rule.id) ?? { rule: r.rule, words: [] };
+    e.words.push(`${r.expected} → ${r.heard}`);
+    byRule.set(r.rule.id, e);
+  }
+  return (
+    <div className="mt-5 border-t pt-4">
+      <p className="label">Published rules applied to “{passageTitle}”</p>
+      {byRule.size === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">No accent rule was applied under {profileName}; every difference was counted.</p>
+      ) : (
+        <ul className="mt-2 space-y-3">
+          {[...byRule.values()].map(({ rule, words }) => (
+            <li key={rule.id} className="text-sm">
+              <p className="font-medium">{rule.name} <span className="text-xs font-normal text-muted-foreground">· rule {rule.id} · {words.length}×</span></p>
+              <p className="text-xs text-muted-foreground">Words: {words.join(", ")}</p>
+              <p className="mt-1 text-xs italic text-muted-foreground">{rule.source.citation}</p>
+              <SourceLinks source={rule.source} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
