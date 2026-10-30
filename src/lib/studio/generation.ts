@@ -32,7 +32,7 @@ export type GenerationOptions = {
 export async function runGeneration(data: StudioParams, options: GenerationOptions): Promise<StudioResult> {
   const [lo, hi] = WORD_RANGE[data.grade];
   const req = TARGETS.filter((t) => data.targets.includes(t.id)).map((t) => `${t.id} (at least ${requiredDensity(t.id, data)} eligible occurrences)`).join(", ");
-  const messages: Message[] = [{ role: "system", content: SYSTEM }, { role: "user", content: `Grade ${data.grade}. Theme: ${data.theme}. Length ${lo}-${hi} words. Targets: ${req}.` }];
+  const messages: Message[] = [{ role: "system", content: SYSTEM }, { role: "user", content: `Grade ${data.grade}. Theme: ${data.theme}. Length ${lo}-${hi} words. Targets: ${req}.${data.demoRefusal ? " If this cannot be fully met, do not deliberate: return your best attempt as the JSON object right away." : ""}` }];
   const attempts: AttemptLog[] = [];
   const total = { input: 0, output: 0 };
   let servedModel = "";
