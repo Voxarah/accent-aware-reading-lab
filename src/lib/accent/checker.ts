@@ -32,7 +32,10 @@ function findRule(profile: AccentProfile, e: string, h: string): AccentRule | un
           id: `${r1.id}+${r2.id}`,
           name: `${r1.name} + ${r2.name}`,
           example: `${e} → ${m} → ${h}`,
-          source: { citation: r1.source.citation === r2.source.citation ? r1.source.citation : `${r1.source.citation} · ${r2.source.citation}` },
+          source: {
+            citation: r1.source.citation === r2.source.citation ? r1.source.citation : `${r1.source.citation} · ${r2.source.citation}`,
+            links: [...r1.source.links, ...r2.source.links].filter((l, i, a) => a.findIndex((x) => x.url === l.url) === i),
+          },
           explains: () => true,
         };
       }
