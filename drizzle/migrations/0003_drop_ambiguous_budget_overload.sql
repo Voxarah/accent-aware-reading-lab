@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.reserve_studio_budget(numeric, numeric);

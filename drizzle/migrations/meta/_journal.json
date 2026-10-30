@@ -22,6 +22,13 @@
       "when": 1793158327197,
       "tag": "0002_studio_window_budget_ceiling",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793379370436,
+      "tag": "0003_drop_ambiguous_budget_overload",
+      "breakpoints": true
     }
   ]
 }

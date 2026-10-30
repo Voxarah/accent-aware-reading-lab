@@ -26,7 +26,8 @@ export function VoiceCapture({ onTranscript }: { onTranscript: (text: string) =>
     if (m.type === "status") say(m.message);
     else if (m.type === "progress") {
       setPct(m.progress);
-      say(`Fetching model weights · ${m.file} · ${m.progress}%`);
+      const line = `Fetching model weights · ${m.file} · ${m.progress}%`;
+      setLines((ls) => ls.at(-1)?.startsWith(`Fetching model weights · ${m.file} ·`) ? [...ls.slice(0, -1), line] : [...ls.slice(-30), line]);
     } else if (m.type === "ready") {
       setPct(100);
       say(`Edge model compiled · runtime: ${m.device}`);
@@ -36,7 +37,7 @@ export function VoiceCapture({ onTranscript }: { onTranscript: (text: string) =>
     } else if (m.type === "result") {
       say(`Transcript received (${m.text.split(/\s+/).filter(Boolean).length} words) — running accent-fair check`);
       setPhase("ready");
-      if (m.text) onTranscript(m.text);
+      if (m.text) onTranscriptRef.current(m.text);
       else say("No speech detected — try again, closer to the mic.");
     } else if (m.type === "error") {
       say(`Error: ${m.message}`);

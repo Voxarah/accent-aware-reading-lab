@@ -49,16 +49,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      reserve_studio_budget:
-        | { Args: { p_amount: number; p_ceiling: number }; Returns: boolean }
-        | {
-            Args: {
-              p_amount: number
-              p_ceiling: number
-              p_window_ceiling?: number
-            }
-            Returns: boolean
-          }
+      reserve_studio_budget: {
+        Args: { p_amount: number; p_ceiling: number; p_window_ceiling?: number }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
