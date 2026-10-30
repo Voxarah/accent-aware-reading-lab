@@ -27,7 +27,7 @@ export function VoiceCapture({ onTranscript }: { onTranscript: (text: string) =>
     else if (m.type === "progress") {
       setPct(m.progress);
       const line = `Fetching model weights · ${m.file} · ${m.progress}%`;
-      setLines((ls) => ls.length && ls[ls.length - 1].startsWith(`Fetching model weights · ${m.file} ·`) ? [...ls.slice(0, -1), line] : [...ls.slice(-30), line]);
+      setLines((ls) => ls.at(-1)?.startsWith(`Fetching model weights · ${m.file} ·`) ? [...ls.slice(0, -1), line] : [...ls.slice(-30), line]);
     } else if (m.type === "ready") {
       setPct(100);
       say(`Edge model compiled · runtime: ${m.device}`);
