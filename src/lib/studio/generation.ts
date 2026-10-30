@@ -1,5 +1,5 @@
 import { TARGETS } from "./targets";
-import { verifyCandidate, WORD_RANGE, type StudioParams, type Verification } from "./verifier";
+import { verifyCandidate, requiredDensity, WORD_RANGE, type StudioParams, type Verification } from "./verifier";
 export const MAX_ATTEMPTS = 2;
 // Muse Spark is a reasoning model: hard requests burn 4k+ tokens on reasoning
 // before any JSON, so the cap must cover worst-case reasoning plus the payload.
@@ -31,7 +31,7 @@ export type GenerationOptions = {
 };
 export async function runGeneration(data: StudioParams, options: GenerationOptions): Promise<StudioResult> {
   const [lo, hi] = WORD_RANGE[data.grade];
-  const req = TARGETS.filter((t) => data.targets.includes(t.id)).map((t) => `${t.id} (at least ${t.minDensity} eligible occurrences)`).join(", ");
+  const req = TARGETS.filter((t) => data.targets.includes(t.id)).map((t) => (data.demoRefusal ? `${t.id} (as many eligible occurrences as the length allows)` : `${t.id} (at least ${requiredDensity(t.id, data)} eligible occurrences)`)).join(", ");
   const messages: Message[] = [{ role: "system", content: SYSTEM }, { role: "user", content: `Grade ${data.grade}. Theme: ${data.theme}. Length ${lo}-${hi} words. Targets: ${req}.` }];
   const attempts: AttemptLog[] = [];
   const total = { input: 0, output: 0 };

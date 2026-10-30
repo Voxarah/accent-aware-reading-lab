@@ -39,9 +39,10 @@ export function PassageStudio({ onAccept }: { onAccept: (p: GeneratedPassage) =>
   const [added, setAdded] = useState(false);
 
   const toggle = (id: TargetId) => setTargets((t) => (t.includes(id) ? t.filter((x) => x !== id) : t.length < 3 ? [...t, id] : t));
-  const go = async () => {
-    setBusy(true); setRes(null); setAdded(false);
-    try { setRes(await gen({ data: { grade, theme, targets } })); }
+  const [demo, setDemo] = useState(false);
+  const go = async (demoRefusal = false) => {
+    setBusy(true); setRes(null); setAdded(false); setDemo(demoRefusal);
+    try { setRes(await gen({ data: demoRefusal ? { grade: 2, theme, targets: ["cluster-reduction"], demoRefusal: true } : { grade, theme, targets } })); }
     catch { setRes({ status: "error", message: "The request failed.", attempts: [] }); }
     finally { setBusy(false); }
   };
@@ -69,21 +70,23 @@ export function PassageStudio({ onAccept }: { onAccept: (p: GeneratedPassage) =>
           </Button>
         ))}
       </div>
-      <Button variant="ghost" onClick={go} disabled={busy || targets.length === 0} className="btn-primary mt-4 h-auto w-full">
+      <Button variant="ghost" onClick={() => go()} disabled={busy || targets.length === 0} className="btn-primary mt-4 h-auto w-full">
         {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating and verifying…</> : "Generate and verify"}
       </Button>
       <p className="mt-2 text-xs text-muted-foreground">Sends only these settings. Up to {MAX_ATTEMPTS} attempts; failed checks are fed back to the model, then the passage is refused.</p>
+      <Button variant="outline" onClick={() => go(true)} disabled={busy} className="mt-3 h-auto w-full">Demonstrate refusal</Button>
+      <p className="mt-1 text-xs text-muted-foreground">Asks for a grade 2 passage with more target words than its 60-word limit can hold. The same checks run; nothing is saved.</p>
 
       {res?.status === "not-configured" && <p className="mt-4 rounded-md bg-muted p-3 text-sm">Meta Model API is not connected yet. Verified passages appear here once it is.</p>}
       {res?.status === "error" && <div className="mt-4 rounded-md bg-muted p-3 text-sm"><p>{res.message} Nothing was added.</p><AttemptHistory attempts={res.attempts} /></div>}
       {res?.status === "refused" && (
         <div className="mt-4 rounded-md border border-destructive p-3 text-sm">
-          <p className="font-semibold">Generation refused</p>
+          <p className="font-semibold">Generation refused{demo ? " · refusal demonstration" : ""}</p>
           <p className="text-xs text-muted-foreground">Failed deterministic verification after {res.attempts.length} attempts ({res.model}). The passage was discarded.</p>
           <AttemptHistory attempts={res.attempts} />
         </div>
       )}
-      {res?.status === "verified" && (() => {
+      {res?.status === "verified" && !demo && (() => {
         const p = toPassage(res);
         if (!p) return null;
         return (
