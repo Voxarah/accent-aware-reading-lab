@@ -16,7 +16,13 @@ export type Candidate = z.infer<typeof CandidateSchema>;
 
 export const WORD_RANGE: Record<Grade, [number, number]> = { 1: [20, 45], 2: [25, 60], 3: [30, 75] };
 
-export type StudioParams = { grade: Grade; theme: string; targets: TargetId[] };
+// demoRefusal: judge demonstration only. Requires more verified tokens per target than
+// the grade's word cap allows, so no passage can pass and the normal pipeline must refuse.
+export type StudioParams = { grade: Grade; theme: string; targets: TargetId[]; demoRefusal?: boolean };
+export function requiredDensity(id: TargetId, params: StudioParams): number {
+  if (params.demoRefusal) return WORD_RANGE[params.grade][1] + 1;
+  return TARGETS.find((t) => t.id === id)?.minDensity ?? 3;
+}
 
 export type TagCheck = { word: string; target: TargetId; inText: boolean; qualifies: boolean };
 export type Verification = {
@@ -62,7 +68,7 @@ export function verifyCandidate(raw: unknown, params: StudioParams): Verificatio
   const density = params.targets.map((id) => {
     const vs = verifiedWords(id);
     const verified = words.filter((w) => vs.has(w) && densityEligible(id, w)).length;
-    const required = TARGETS.find((t) => t.id === id)?.minDensity ?? 3;
+    const required = requiredDensity(id, params);
     if (verified < required) diagnostics.push(`Target ${id}: density ${verified} of ${required} required verified tokens.`);
     return { target: id, verified, required };
   });
