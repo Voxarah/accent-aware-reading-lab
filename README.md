@@ -7,7 +7,6 @@ Built for the Meta hackathon, November 2026.
 - Live app: https://accent-aware-reading-lab.lovable.app
 - Demo recording: https://www.loom.com/share/ecd5ec249a224d768746ad1f9f3160db
 
-
 ## What it does
 
 - **Reading checks in the browser.** A passage is checked two ways: a literal word-match check, and the accent-aware check which excuses differences that match documented pronunciation rules of the reader's accent profile (e.g. Southern US, African American English, General American).

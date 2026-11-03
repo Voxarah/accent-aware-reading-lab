@@ -20,7 +20,7 @@
 - [x] Prove spend ceilings trip: 1¢ ceiling rejects second half-cent, $10 daily cap rejects $11, $40 window cap rejects over-limit; ledger durable.
 - [x] Exercise retry/refusal live: fault-injected bad output → exactly one retry, refusal with both attempts' diagnostics, nothing saved.
 - [x] Clean end-to-end grade-2 generation: verified, provenance record with runtime model ID, density, decodability, versions; rule-derived readers re-scored. Measured ~$0.01–0.03 per call.
-- [ ] Pre-generate 1–2 accepted passages through the judge-build UI and reload before demo. Needs the teacher passcode in the preview.
+- [x] Pre-generated accepted passages in the judge build; the recording carries them. No bundled passage in source — see Freeze decisions.
 - [ ] Copy chosen teacher passcode into the submission's private testing instructions. Blocked: owner-only chosen value; docs/judge-testing.md provides instructions without exposing it.
 - Optional server signing deferred until after real connection verification; not required for the unsigned provenance record.
 
