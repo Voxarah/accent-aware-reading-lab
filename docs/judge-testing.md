@@ -1,7 +1,7 @@
 # Voxarah Capture — judge testing
 
 ## Entry
-- Judge build: https://id-preview--24954b32-f9c3-4063-8105-7c829a6b7595.lovable.app
+- Judge build: https://accent-aware-reading-lab.lovable.app
 - Public repository: https://github.com/Voxarah/accent-aware-reading-lab
 - Demo recording: https://www.loom.com/share/ecd5ec249a224d768746ad1f9f3160db
 - Passage Studio appears only in the explicitly enabled judge build. The public app never permits generation.
