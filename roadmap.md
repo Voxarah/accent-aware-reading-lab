@@ -1,6 +1,15 @@
 # Roadmap
 
+## Freeze decisions (Nov 3)
+- [x] Judge-facing docs rewritten to the live-verified state: connection and JSON mode, runtime model ID, measured cost per press, spend ceilings proven on screen, refusal path proven live.
+- [x] Public repository verified live and public: github.com/Voxarah/accent-aware-reading-lab carries source, docs, and MIT license; the committed .env holds publishable values only.
+- [x] Decided against bundling a Studio passage into source. Studio passages live in the browser that generated them; the demo recording carries the Studio story, and the quickstart keeps "(if shown)". Do not re-propose before the freeze.
+- [ ] Demo-day: copy the chosen teacher passcode into the submission's private testing-instructions field. Owner-only value.
+- [ ] Demo-day: one clean close-mic parent-voice take, or the voice section stays out of the package.
+- [ ] Submit before 9 PM ET, Nov 4.
+
 ## Studio audit hardening
+
 - [x] Fix truthful connection copy, heuristic disclosure, provenance name and UTC date.
 - [x] Revalidate stored candidates and regenerate readers; stamp engine and lexicon versions.
 - [x] Exclude common initial-th words from density; show every attempt's diagnostics.
@@ -11,7 +20,7 @@
 - [x] Prove spend ceilings trip: 1¢ ceiling rejects second half-cent, $10 daily cap rejects $11, $40 window cap rejects over-limit; ledger durable.
 - [x] Exercise retry/refusal live: fault-injected bad output → exactly one retry, refusal with both attempts' diagnostics, nothing saved.
 - [x] Clean end-to-end grade-2 generation: verified, provenance record with runtime model ID, density, decodability, versions; rule-derived readers re-scored. Measured ~$0.01–0.03 per call.
-- [ ] Pre-generate 1–2 accepted passages through the judge-build UI and reload before demo. Needs the teacher passcode in the preview.
+- [x] Pre-generated accepted passages in the judge build; the recording carries them. No bundled passage in source — see Freeze decisions.
 - [ ] Copy chosen teacher passcode into the submission's private testing instructions. Blocked: owner-only chosen value; docs/judge-testing.md provides instructions without exposing it.
 - Optional server signing deferred until after real connection verification; not required for the unsigned provenance record.
 
