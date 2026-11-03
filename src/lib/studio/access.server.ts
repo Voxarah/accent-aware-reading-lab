@@ -1,10 +1,12 @@
-import { useSession, getRequestUrl, setResponseHeader } from "@tanstack/react-start/server";
+import { useSession, getRequestUrl, getRequestHeader, setResponseHeader } from "@tanstack/react-start/server";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { judgeEnabled } from "./policy";
 
 export function enabledHere() {
   setResponseHeader("Cache-Control", "no-store");
-  const origin = getRequestUrl().origin;
+  const url = getRequestUrl();
+  const forwarded = getRequestHeader("x-forwarded-host")?.split(",")[0]?.trim();
+  const origin = forwarded ? `https://${forwarded}` : url.origin;
   if (import.meta.env.DEV && origin === "http://localhost:8080") return process.env["STUDIO_ENABLED"] === "true";
   return judgeEnabled(process.env["STUDIO_ENABLED"], process.env["STUDIO_JUDGE_ORIGIN"], origin);
 }

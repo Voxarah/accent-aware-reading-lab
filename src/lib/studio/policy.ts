@@ -1,9 +1,10 @@
 export function judgeEnabled(enabled: string | undefined, allowedOrigin: string | undefined, actualOrigin: string): boolean {
-  if (enabled !== "true" || !allowedOrigin) return false;
+  if (enabled?.trim().toLowerCase() !== "true" || !allowedOrigin?.trim()) return false;
   try {
-    const allowed = new URL(allowedOrigin);
+    const allowed = new URL(allowedOrigin.trim());
     const actual = new URL(actualOrigin);
-    return allowed.origin === actual.origin && allowed.href === `${allowed.origin}/`;
+    // Exact host match; path must be empty. Protocol is ignored because the edge proxy may report http internally.
+    return allowed.host === actual.host && allowed.pathname === "/" && !allowed.search;
   } catch { return false; }
 }
 
