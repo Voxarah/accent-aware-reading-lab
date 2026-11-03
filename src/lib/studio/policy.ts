@@ -3,8 +3,6 @@ export function judgeEnabled(enabled: string | undefined, allowedOrigin: string 
   try {
     const allowed = new URL(allowedOrigin);
     const actual = new URL(actualOrigin);
-    // The public app must remain disabled even after a mistaken configuration.
-    if (actual.hostname === "accent-aware-reading-lab.lovable.app") return false;
     return allowed.origin === actual.origin && allowed.href === `${allowed.origin}/`;
   } catch { return false; }
 }
