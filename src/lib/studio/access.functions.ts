@@ -2,12 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 export const studioAccess = createServerFn({ method: "GET" }).handler(async () => {
   const { enabledHere, studioSession } = await import("./access.server");
-  if (!enabledHere()) {
-    const { getRequestUrl, getRequestHeader } = await import("@tanstack/react-start/server");
-    const allowed = process.env["STUDIO_JUDGE_ORIGIN"]?.trim();
-    let allowedHost = ""; try { allowedHost = allowed ? new URL(allowed).host : "bad"; } catch { allowedHost = "unparseable"; }
-    return { enabled: false, unlocked: false, configured: false, diag: { flag: process.env["STUDIO_ENABLED"]?.trim() === "true", allowedHost, seenHost: getRequestUrl().host, fwd: getRequestHeader("x-forwarded-host") ?? "" } };
-  }
+  if (!enabledHere()) return { enabled: false, unlocked: false, configured: false };
   const configured = Boolean(process.env["STUDIO_PASSWORD"] && process.env["STUDIO_SESSION_SECRET"]);
   return { enabled: true, configured, unlocked: configured ? Boolean((await studioSession()).data.unlocked) : false };
 });
