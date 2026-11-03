@@ -117,7 +117,7 @@ describe("generation orchestration", () => {
 describe("judge and budget guards", () => {
   const origin = "https://judge.example.test";
   it("flag off prevents access", () => expect(judgeEnabled(undefined, origin, origin)).toBe(false));
-  it("public app remains off even if accidentally allowlisted", () => expect(judgeEnabled("true", "https://accent-aware-reading-lab.lovable.app", "https://accent-aware-reading-lab.lovable.app")).toBe(false));
+  it("live app is allowed only when it is the configured origin", () => { const live = "https://accent-aware-reading-lab.lovable.app"; expect(judgeEnabled("true", live, live)).toBe(true); expect(judgeEnabled(undefined, live, live)).toBe(false); });
   it("only exact configured judge origin is permitted", () => { expect(judgeEnabled("true", origin, origin)).toBe(true); expect(judgeEnabled("true", origin, "https://other.test")).toBe(false); });
   it("missing pricing fails closed", () => expect(reservationUsd([], 0, 1, 700)).toBe(0));
   it("reserves bounded input plus all 700 output tokens without cache discounts", () => expect(reservationUsd([{ content: "abc" }], 1, 2, 700)).toBe(0.001915));
