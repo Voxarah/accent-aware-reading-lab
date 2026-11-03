@@ -1,6 +1,15 @@
 # Roadmap
 
+## Freeze decisions (Nov 3)
+- [x] Judge-facing docs rewritten to the live-verified state: connection and JSON mode, runtime model ID, measured cost per press, spend ceilings proven on screen, refusal path proven live.
+- [x] Public repository verified live and public: github.com/Voxarah/accent-aware-reading-lab carries source, docs, and MIT license; the committed .env holds publishable values only.
+- [x] Decided against bundling a Studio passage into source. Studio passages live in the browser that generated them; the demo recording carries the Studio story, and the quickstart keeps "(if shown)". Do not re-propose before the freeze.
+- [ ] Demo-day: copy the chosen teacher passcode into the submission's private testing-instructions field. Owner-only value.
+- [ ] Demo-day: one clean close-mic parent-voice take, or the voice section stays out of the package.
+- [ ] Submit before 9 PM ET, Nov 4.
+
 ## Studio audit hardening
+
 - [x] Fix truthful connection copy, heuristic disclosure, provenance name and UTC date.
 - [x] Revalidate stored candidates and regenerate readers; stamp engine and lexicon versions.
 - [x] Exclude common initial-th words from density; show every attempt's diagnostics.
