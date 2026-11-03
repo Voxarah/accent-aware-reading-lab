@@ -4,7 +4,7 @@
 - Judge build: https://accent-aware-reading-lab.lovable.app
 - Public repository: https://github.com/Voxarah/accent-aware-reading-lab
 - Demo recording: https://www.loom.com/share/ecd5ec249a224d768746ad1f9f3160db
-- Passage Studio appears only in the explicitly enabled judge build. The public app never permits generation.
+- Passage Studio appears on the live build above, behind the teacher passcode (provided privately in the submission notes) and the shared daily spend ceiling.
 - Use the teacher passcode supplied by the owner in the submission's private testing-instructions field. The owner must copy the passcode they chose there; it is intentionally not recorded in source or public documentation.
 - A shared passcode is a gate, not individual user authentication. It grants access to teacher passage preparation only.
 
